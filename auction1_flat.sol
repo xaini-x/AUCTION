@@ -1682,7 +1682,7 @@ pragma solidity 0.8.12;
 
 contract Auction is ERC721, Ownable {
     MyToken private token;
-    address payable _owner;
+   
     mapping(address => uint256) private Index;
     mapping(uint256 => bool) private ids;
     uint256 charge = 0.5 ether;
@@ -1695,7 +1695,7 @@ uint tokensPerEther = 1;
   
 
     constructor(address _token) ERC721("", "") {
-        _owner = payable(msg.sender);
+        // owner() = payable(msg.sender);
         token = MyToken(_token);
     }
 
@@ -1708,15 +1708,15 @@ uint tokensPerEther = 1;
         function swapToken() external payable {
         require(msg.value > 0, "Buy Token: Need to send some amount of ether");          // ether should be more than zero
         uint tokensToBuy = msg.value ;                    //no.of token need to buy is depend on calculation
-        payable(_owner).transfer(msg.value);
-        token.transferFrom(_owner, msg.sender, tokensToBuy);
+       payable(owner()).transfer(msg.value);
+        token.transferFrom(owner(), msg.sender, tokensToBuy);
     }
 
 
     function swapBack(uint256 amount) external payable {
         address payable to = payable(msg.sender); 
         to.transfer(amount);
-        token.transferFrom(_owner, msg.sender, amount);
+        token.transferFrom(owner(), msg.sender, amount);
     }
 
     function startAuction(
@@ -1748,7 +1748,7 @@ uint tokensPerEther = 1;
         uint256 _pay = amount - auctionprice;
         token.transferFrom(from, ownerOf(id), _pay);
         transferFrom(ownerOf(id), from, id);
-        token.transferFrom(from, _owner, auctionprice);
+        token.transferFrom(from, owner(), auctionprice);
         ids[id] = false;
         emit TransferDetail(id, from, amount);
     }
@@ -1761,16 +1761,12 @@ uint tokensPerEther = 1;
 
     // transfering money to the given (reciver)address in constructor
     function withdraw() public {
-        require(msg.sender == _owner, "");
-        _owner.transfer(address(this).balance);
+        require(msg.sender == owner(), "");
+        payable(owner()).transfer(address(this).balance);
     }
 
-    event registration(address redisteredAddress, uint256 UserType);
     event ItemDetail(address owner, uint256 itemId);
     event AUCTIONSTART(uint256 startTime, uint256 minimumBID, uint256 endTime);
-    event BIDdetail(uint256 onIndex, uint256 Amount, uint256 remainingbids);
-    event _Winner(uint256 id, address highestBidder, uint256 amout);
-
     event TransferDetail(
         uint256 TransferID,
         address newOwner,
